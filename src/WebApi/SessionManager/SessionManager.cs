@@ -3,6 +3,7 @@ namespace WebApi.SessionManager;
 public class SessionManager : ISessionManager
 {
     private readonly HashSet<string> _sessions = new();
+
     public string NewSession()
     {
         var sessionId = Guid.NewGuid().ToString();

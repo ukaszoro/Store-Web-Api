@@ -5,6 +5,7 @@ using Scalar.AspNetCore;
 using WebApi.SessionManager;
 
 namespace WebApi;
+
 public class Program
 {
     public static void Main(string[] args)
@@ -15,12 +16,11 @@ public class Program
         {
             opt.UseInMemoryDatabase("ProductList");
         });
-        
+
         builder.Services.AddScoped<IProductsManager, ProductsManager>();
         builder.Services.AddSingleton<ISessionManager, SessionManager.SessionManager>();
-        
+
         builder.Services.AddControllers();
-        
 
         builder.Services.AddOpenApi();
 

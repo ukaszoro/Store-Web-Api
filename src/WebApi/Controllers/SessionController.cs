@@ -10,7 +10,8 @@ public class SessionController(ISessionManager sessionManager) : ControllerBase
     [HttpPost("login")]
     public ActionResult Login()
     {
-        Response.Cookies.Append("session", sessionManager.NewSession(),new CookieOptions { Expires = DateTimeOffset.UtcNow.AddDays(30) });
+        Response.Cookies.Append("session", sessionManager.NewSession(),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddDays(30) });
         return Ok();
     }
 

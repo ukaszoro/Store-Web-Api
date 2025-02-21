@@ -6,7 +6,7 @@ namespace Products.ProductManager;
 public class ProductsManager(ProductContext context) : IProductsManager
 {
     public DbSet<Product> GetProducts()
-    { 
+    {
         return context.Products;
     }
 

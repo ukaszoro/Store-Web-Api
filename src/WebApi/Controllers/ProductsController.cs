@@ -4,14 +4,16 @@ using Products.Models;
 using Products.ProductManager;
 using WebApi.DTO;
 using WebApi.Validator;
+using WebApi.SessionManager;
 
 namespace WebApi.Controllers;
 
 [Route("api/Products")]
 [ApiController]
-public class ProductsController(IProductsManager productsManager) : ControllerBase
+public class ProductsController(IProductsManager productsManager, ISessionManager sessionManager) : ControllerBase
 {
     private static ProductValidator _productValidator = new ProductValidator();
+
     // GET: api/Products
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts()
@@ -25,12 +27,12 @@ public class ProductsController(IProductsManager productsManager) : ControllerBa
     public async Task<ActionResult<ProductDTO>> GetProduct(long id)
     {
         var product = await productsManager.GetProductById(id);
-        
-        if (_productValidator.Validate(product))
+
+        if (!_productValidator.Validate(product))
         {
             return NotFound();
         }
-        
+
         return ItemToDto(product);
     }
 
@@ -38,13 +40,18 @@ public class ProductsController(IProductsManager productsManager) : ControllerBa
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProduct(long id, ProductDTO productDto)
     {
+        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        {
+            return Unauthorized();
+        }
+
         if (id != productDto.ID)
         {
             return BadRequest();
         }
 
         var product = await productsManager.GetProductById(id);
-        if (_productValidator.Validate(product))
+        if (!_productValidator.Validate(product))
         {
             return NotFound();
         }
@@ -68,14 +75,21 @@ public class ProductsController(IProductsManager productsManager) : ControllerBa
     [HttpPost]
     public async Task<ActionResult<ProductDTO>> PostProduct(ProductDTO productDto)
     {
+        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        {
+            return Unauthorized();
+        }
+
         var product = new Product
         {
             Name = productDto.Name,
             Price = productDto.Price,
         };
         if (!_productValidator.Validate(product))
+        {
             return BadRequest();
-        
+        }
+
         await productsManager.AddProduct(product);
 
         return CreatedAtAction(nameof(GetProduct), new { id = product.ID }, ItemToDto(product));
@@ -85,6 +99,11 @@ public class ProductsController(IProductsManager productsManager) : ControllerBa
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(long id)
     {
+        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        {
+            return Unauthorized();
+        }
+
         var product = await productsManager.GetProductById(id);
         if (product == null)
         {
@@ -92,10 +111,10 @@ public class ProductsController(IProductsManager productsManager) : ControllerBa
         }
 
         await productsManager.RemoveProduct(product);
-        
+
         return NoContent();
     }
-    
+
     private static ProductDTO ItemToDto(Product product) =>
         new ProductDTO()
         {
