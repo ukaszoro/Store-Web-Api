@@ -1,30 +1,44 @@
 using Microsoft.EntityFrameworkCore;
 using Products;
+using Products.ProductManager;
 using Scalar.AspNetCore;
+using WebApi.SessionManager;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddDbContext<ProductContext>(opt =>
-    opt.UseInMemoryDatabase("ProductList"));
-
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace WebApi;
+public class Program
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddDbContext<ProductContext>(opt =>
+        {
+            opt.UseInMemoryDatabase("ProductList");
+        });
+        
+        builder.Services.AddScoped<IProductsManager, ProductsManager>();
+        builder.Services.AddSingleton<ISessionManager, SessionManager.SessionManager>();
+        
+        builder.Services.AddControllers();
+        
+
+        builder.Services.AddOpenApi();
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+            app.MapScalarApiReference();
+        }
+
+        app.UseHttpsRedirection();
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.Run();
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
