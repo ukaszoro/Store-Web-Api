@@ -16,7 +16,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
 
     // GET: api/Products
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts()
+    public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
         return await productsManager.GetAll()
             .Select(x => ItemToDto(x)).ToListAsync();
@@ -24,7 +24,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
 
     // GET: api/Products/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDTO>> GetProduct(long id)
+    public async Task<ActionResult<Product>> GetProduct(long id)
     {
         var product = await productsManager.GetById(id);
 
@@ -38,7 +38,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
 
     // PUT: api/Products/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutProduct(long id, ProductDTO productDto)
+    public async Task<IActionResult> PutProduct(long id, Product productDto)
     {
         if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
@@ -73,7 +73,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
 
     // POST: api/Products
     [HttpPost]
-    public async Task<ActionResult<ProductDTO>> PostProduct(ProductDTO productDto)
+    public async Task<ActionResult<Product>> PostProduct(Product productDto)
     {
         if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
@@ -115,8 +115,8 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
         return NoContent();
     }
 
-    private static ProductDTO ItemToDto(Product product) =>
-        new ProductDTO()
+    private static Product ItemToDto(Product product) =>
+        new Product()
         {
             Id = product.Id,
             Name = product.Name,
