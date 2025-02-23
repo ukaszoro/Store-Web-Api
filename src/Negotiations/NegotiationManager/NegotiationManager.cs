@@ -14,6 +14,11 @@ public class NegotiationManager(NegotiationContext context) : INegotiationManage
     {
         return GetAll().SingleOrDefaultAsync(x => x.UserId == userId && x.ProductId == productId);
     }
+    
+    public Task<Negotiation?> Find(long id)
+    {
+        return GetAll().SingleOrDefaultAsync(x => x.Id == id);
+    }
 
     public Task<List<Negotiation>> GetAllWithProductId(long productId)
     {
