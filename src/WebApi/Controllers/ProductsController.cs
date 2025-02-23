@@ -12,13 +12,13 @@ namespace WebApi.Controllers;
 [ApiController]
 public class ProductsController(IProductsManager productsManager, ISessionManager sessionManager) : ControllerBase
 {
-    private static ProductValidator _productValidator = new ProductValidator();
+    private ProductValidator _productValidator = new ProductValidator(productsManager);
 
     // GET: api/Products
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts()
     {
-        return await productsManager.GetProducts()
+        return await productsManager.GetAll()
             .Select(x => ItemToDto(x)).ToListAsync();
     }
 
@@ -26,7 +26,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDTO>> GetProduct(long id)
     {
-        var product = await productsManager.GetProductById(id);
+        var product = await productsManager.GetById(id);
 
         if (!_productValidator.Validate(product))
         {
@@ -40,17 +40,17 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProduct(long id, ProductDTO productDto)
     {
-        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        if (id != productDto.ID)
+        if (id != productDto.Id)
         {
             return BadRequest();
         }
 
-        var product = await productsManager.GetProductById(id);
+        var product = await productsManager.GetById(id);
         if (!_productValidator.Validate(product))
         {
             return NotFound();
@@ -63,7 +63,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
         {
             await productsManager.SaveChanges();
         }
-        catch (DbUpdateConcurrencyException) when (!_productValidator.ProductExists(product))
+        catch (DbUpdateConcurrencyException) when (!_productValidator.Exists(product.Id))
         {
             return NotFound();
         }
@@ -75,7 +75,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     [HttpPost]
     public async Task<ActionResult<ProductDTO>> PostProduct(ProductDTO productDto)
     {
-        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
@@ -90,27 +90,27 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
             return BadRequest();
         }
 
-        await productsManager.AddProduct(product);
+        await productsManager.Add(product);
 
-        return CreatedAtAction(nameof(GetProduct), new { id = product.ID }, ItemToDto(product));
+        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, ItemToDto(product));
     }
 
     // DELETE: api/Products/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(long id)
     {
-        if (!sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        var product = await productsManager.GetProductById(id);
-        if (product == null)
+        var product = await productsManager.GetById(id);
+        if (!_productValidator.Validate(product))
         {
             return NotFound();
         }
 
-        await productsManager.RemoveProduct(product);
+        await productsManager.Remove(product);
 
         return NoContent();
     }
@@ -118,7 +118,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     private static ProductDTO ItemToDto(Product product) =>
         new ProductDTO()
         {
-            ID = product.ID,
+            Id = product.Id,
             Name = product.Name,
             Price = product.Price,
         };

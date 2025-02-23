@@ -5,12 +5,12 @@ namespace Products.ProductManager;
 
 public class ProductsManager(ProductContext context) : IProductsManager
 {
-    public DbSet<Product> GetProducts()
+    public DbSet<Product> GetAll()
     {
         return context.Products;
     }
 
-    public ValueTask<Product?> GetProductById(long productId)
+    public ValueTask<Product?> GetById(long productId)
     {
         return context.Products.FindAsync(productId);
     }
@@ -20,13 +20,13 @@ public class ProductsManager(ProductContext context) : IProductsManager
         return context.SaveChangesAsync();
     }
 
-    public async Task AddProduct(Product product)
+    public async Task Add(Product product)
     {
         context.Products.Add(product);
         await SaveChanges();
     }
 
-    public async Task RemoveProduct(Product product)
+    public async Task Remove(Product product)
     {
         context.Products.Remove(product);
         await SaveChanges();

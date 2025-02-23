@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Negotiations\Negotiations.csproj" />
     <ProjectReference Include="..\Products\Products.csproj" />
   </ItemGroup>
 

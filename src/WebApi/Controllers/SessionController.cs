@@ -18,7 +18,7 @@ public class SessionController(ISessionManager sessionManager) : ControllerBase
     [HttpPost("check")]
     public ActionResult Check()
     {
-        if (sessionManager.IsLoggedIn(Request.Cookies["session"] ?? String.Empty))
+        if (sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Ok("Logged in");
         }

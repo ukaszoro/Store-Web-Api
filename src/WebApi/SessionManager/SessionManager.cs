@@ -1,6 +1,6 @@
 namespace WebApi.SessionManager;
 
-public class SessionManager : ISessionManager
+public class SessionManager : ISessionManager, IUserSessionManager
 {
     private readonly HashSet<string> _sessions = new();
 
@@ -11,7 +11,7 @@ public class SessionManager : ISessionManager
         return sessionId;
     }
 
-    public bool IsLoggedIn(string sessionId)
+    public bool Exists(string sessionId)
     {
         return _sessions.Contains(sessionId);
     }

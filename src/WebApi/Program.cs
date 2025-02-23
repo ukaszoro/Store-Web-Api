@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Negotiations.Models;
+using Negotiations.NegotiationManager;
 using Products;
+using Products.Models;
 using Products.ProductManager;
 using Scalar.AspNetCore;
 using WebApi.SessionManager;
@@ -12,13 +15,13 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddDbContext<ProductContext>(opt =>
-        {
-            opt.UseInMemoryDatabase("ProductList");
-        });
+        builder.Services.AddDbContext<ProductContext>(opt => { opt.UseInMemoryDatabase("ProductList"); });
+        builder.Services.AddDbContext<NegotiationContext>(opt => { opt.UseInMemoryDatabase("NegotiationList"); });
 
         builder.Services.AddScoped<IProductsManager, ProductsManager>();
+        builder.Services.AddScoped<INegotiationManager, NegotiationManager>();
         builder.Services.AddSingleton<ISessionManager, SessionManager.SessionManager>();
+        builder.Services.AddSingleton<IUserSessionManager, SessionManager.SessionManager>();
 
         builder.Services.AddControllers();
 

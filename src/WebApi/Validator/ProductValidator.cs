@@ -1,14 +1,13 @@
 using Products;
 using Products.Models;
 using Products.ProductManager;
+using WebApi.DTO;
 
 namespace WebApi.Validator;
 
-public class ProductValidator
+public class ProductValidator(IProductsManager productsManager)
 {
-    private static readonly ProductsManager Products;
-
-    public bool Validate(Product? product)
+    public bool Validate(IProductBase? product)
     {
         if (product != null && product.Name != string.Empty && product.Price > 0)
         {
@@ -18,8 +17,8 @@ public class ProductValidator
         return false;
     }
 
-    public bool ProductExists(Product product)
+    public bool Exists(long productId)
     {
-        return Products.GetProducts().Any(e => e.ID == product.ID);
+        return productsManager.GetAll().Any(e => e.Id == productId);
     }
 }
