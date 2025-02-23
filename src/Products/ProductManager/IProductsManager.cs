@@ -5,9 +5,9 @@ namespace Products.ProductManager;
 
 public interface IProductsManager
 {
-    public DbSet<Product> GetProducts();
-    public ValueTask<Product?> GetProductById(long productId);
+    public DbSet<Product> GetAll();
+    public ValueTask<Product?> GetById(long productId);
     public Task<int> SaveChanges();
-    public Task AddProduct(Product product);
-    public Task RemoveProduct(Product product);
+    public Task Add(Product product);
+    public Task Remove(Product product);
 }
