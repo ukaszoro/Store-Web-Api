@@ -1,19 +1,19 @@
-#Web Store Api
+# Web Store Api
 
-##Description
+## Description
 Basic WebApi with inmemory database with the ability to add/remove products and for clients to negotiate prices. Authorized personel can reject/accept client bids.
 
-##List of Endpoints
+## List of Endpoints
 
-###/api/Session/login
+### /api/Session/login
     - POST: Used for authorized workers to log in. Gives back a cookie that is later used in authorizing various restricted actions.
             No Data is needed for this action.
     
-###/api/Session/check
+### /api/Session/check
     - GET: Used for checking if user is logged in. Returns 'OK' if logged in and 'Unauthorized' if not logged in. (Debug purposes)
            No Data is needed for this action.
 
-###/api/Products
+### /api/Products
     - GET: Used to display all Products currently avaliable in the database.
            No Data is needed for this action.
 
@@ -27,7 +27,7 @@ Basic WebApi with inmemory database with the ability to add/remove products and 
             // 'id' isn't used here, 'name' of the product cannot be empty, 'price' has to be > 0.
             
 
-###/api/Products/{id}
+### /api/Products/{id}
     - GET: Used to request data about a specific Product.
            No Data is needed for this action.
 
@@ -42,7 +42,7 @@ Basic WebApi with inmemory database with the ability to add/remove products and 
     
     - DEL: Used to remove Products from the database completely. Removed the Product with the 'id' specified in the endpoint. Requires the authorization cookie from /api/Session/login.
     
-##/api/Products/{productid}/bids
+### /api/Products/{productid}/bids
     - GET: Used to display all negotiations for the Products with 'productid' currently stored in the database. Requires the authorization cookie from /api/Session/login.
            No Data is needed for this action.
     
@@ -55,7 +55,7 @@ Basic WebApi with inmemory database with the ability to add/remove products and 
             }
             // 'status' is not used, 'price' needs to be > 0, both the 'productId' in json and 'productid' from the endpoint need to be the same to work.
             
-##/api/Products/{productid}/bids/{negotiationid}
+### /api/Products/{productid}/bids/{negotiationid}
     - GET: Used to display the negotiation with the 'negotiationid' for the Product with 'productid'.
            No Data is needed for this action.
     
