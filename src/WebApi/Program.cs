@@ -5,6 +5,7 @@ using Products;
 using Products.Models;
 using Products.ProductManager;
 using Scalar.AspNetCore;
+using WebApi.BackgroundServices;
 using WebApi.SessionManager;
 
 namespace WebApi;
@@ -22,7 +23,14 @@ public class Program
         builder.Services.AddScoped<INegotiationManager, NegotiationManager>();
         builder.Services.AddSingleton<ISessionManager, SessionManager.SessionManager>();
         builder.Services.AddSingleton<IUserSessionManager, SessionManager.SessionManager>();
-
+        
+        builder.Services.Configure<HostOptions>(options =>
+        {
+            options.ServicesStartConcurrently = true;
+        });
+        
+        builder.Services.AddHostedService<ClearOldNegotiationsService>();
+        
         builder.Services.AddControllers();
 
         builder.Services.AddOpenApi();

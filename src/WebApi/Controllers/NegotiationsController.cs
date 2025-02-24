@@ -38,6 +38,7 @@ public class NegotiationsController(
         {
             return NotFound();
         }
+
         return ItemToDto((await negotiationManager.Find(productId))!);
     }
 
@@ -100,7 +101,7 @@ public class NegotiationsController(
         }
 
         Negotiation? negotiation = await negotiationManager.Find(negotiationid);
-        if (!_negotiationValidator.Validate(negotiation))
+        if (negotiation is null)
         {
             return NotFound();
         }
@@ -117,14 +118,14 @@ public class NegotiationsController(
 
     [HttpPost("{productid}/bids/{negotiationid}")]
     public async Task<ActionResult<IEnumerable<Product>>> CreateBid(long productid, long negotiationid,
-        Negotiation negotiationNew)
+        Negotiation? negotiationNew)
     {
         if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        if (!_negotiationValidator.Validate(negotiationNew))
+        if (negotiationNew is null)
         {
             return NotFound();
         }
@@ -134,7 +135,7 @@ public class NegotiationsController(
         }
 
         Negotiation? negotiation = await negotiationManager.Find(negotiationid);
-        if (!_negotiationValidator.Validate(negotiation))
+        if (negotiation is null)
         {
             return NotFound();
         }
@@ -149,9 +150,6 @@ public class NegotiationsController(
         else if (negotiationNew.status == NegotiationStatus.accepted)
         {
             negotiation.status = NegotiationStatus.accepted;
-            Product? product = await productsManager.GetById(negotiation.ProductId);
-            product.Price = negotiation.price;
-            await productsManager.SaveChanges();
         }
 
         if (negotiation.TimesRejected > 3)

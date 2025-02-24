@@ -3,7 +3,7 @@ using Negotiations.Models;
 
 namespace WebApi.DTO;
 
-public class NegotiationDto : INegotiationBase
+public class NegotiationDto
 {
     public long ProductId { get; set; }
     public double price { get; set; }

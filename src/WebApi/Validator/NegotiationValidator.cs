@@ -12,7 +12,7 @@ public class NegotiationValidator(INegotiationManager negotiationManager, IProdu
 
     public bool Validate(NegotiationDto negotiation)
     {
-        if (negotiation != null && negotiation.price > 0 && _productValidator.Exists(negotiation.ProductId))
+        if (negotiation.price > 0 && _productValidator.Exists(negotiation.ProductId))
         {
             return true;
         }
@@ -22,7 +22,7 @@ public class NegotiationValidator(INegotiationManager negotiationManager, IProdu
 
     public bool Validate(Negotiation negotiation)
     {
-        if (negotiation != null && negotiation.price > 0 && _productValidator.Exists(negotiation.ProductId) &&
+        if (negotiation.price > 0 && _productValidator.Exists(negotiation.ProductId) &&
             negotiation.TimesRejected >= 0 && negotiation.status >= NegotiationStatus.waiting &&
             negotiation.status <= NegotiationStatus.rejected && negotiation.UserId != String.Empty)
         {

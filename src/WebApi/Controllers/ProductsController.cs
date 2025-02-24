@@ -28,7 +28,7 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     {
         var product = await productsManager.GetById(id);
 
-        if (!_productValidator.Validate(product))
+        if (product is null)
         {
             return NotFound();
         }
