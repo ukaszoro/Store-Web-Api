@@ -1,6 +1,6 @@
 namespace Negotiations.Models;
 
-public class Negotiation : INegotiationBase
+public class Negotiation
 {
     public long Id { get; set; }
     public string UserId { get; set; }
