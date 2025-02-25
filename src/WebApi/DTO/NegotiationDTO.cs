@@ -5,7 +5,8 @@ namespace WebApi.DTO;
 
 public class NegotiationDto
 {
+    public long Id { get; set; }
     public long ProductId { get; set; }
-    public double price { get; set; }
-    public NegotiationStatus status { get; set; }
+    public double Price { get; set; }
+    public NegotiationStatus Status { get; set; }
 }

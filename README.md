@@ -20,16 +20,16 @@ Basic WebApi with in-memory database with the ability to add/remove products and
 
 ```json
 {
-  "id": 1,
+  "Id": 1,
   "name": "Book",
   "price": 15
 }
 ```
 
-`id` isn't used here, `name` of the product cannot be empty, `price` has to be > 0.
+`Id` isn't used here, `name` of the product cannot be empty, `price` has to be > 0.
 
 
-### `/api/Products/{id}`
+### `/api/Products/{Id}`
 
 - GET: Used to request data about a specific Product. No Data is needed for this action.
 
@@ -37,50 +37,48 @@ Basic WebApi with in-memory database with the ability to add/remove products and
 
 ```json
 {
-  "id": 1,
+  "Id": 1,
   "name": "Book",
   "price": 20
 }
 ```
 
-Both the `id` in json and `id` from the endpoint need to be the same to work. Both `name` and `price` are overwritten.
+Both the `Id` in json and `Id` from the endpoint need to be the same to work. Both `name` and `price` are overwritten.
 
-- DEL: Used to remove Products from the database completely. Removed the Product with the `id` specified in the endpoint. Requires the authorization cookie from `/api/Session/login`.
+- DELETE: Used to remove Products from the database completely. Removed the Product with the `Id` specified in the endpoint. Requires the authorization cookie from `/api/Session/login`.
     
-### `/api/Products/{productid}/bids`
+### `/api/Products/{productId}/bids`
 
-- GET: Used to display all negotiations for the Products with `productid` currently stored in the database. Requires the authorization cookie from `/api/Session/login`. No Data is needed for this action.
+- GET: Used to display all negotiations for the Products with `productId` currently stored in the database. Requires the authorization cookie from `/api/Session/login`. No Data is needed for this action.
 
 - POST: Used by customers to create/update a negotiation. Creates a cookie for distinguishing customers. Customer can have one negotiation per product and can edit his negotiation only if it's been rejected. Example Data for adding Negotiations in json.
 
 ```json
 {
+  "Id" : 1
   "productId": 1,
-  "price": 1,
+  "price": 15,
   "status": 1
 }
 ```
 
-`status` is not used, `price` needs to be > 0, both the `productId` in json and `productid` from the endpoint need to be the same to work.
+`status` and `Id` is not used, `price` needs to be > 0, both the `productId` in json and `productId` from the endpoint need to be the same to work, the product also needs to exist.
             
-### `/api/Products/{productid}/bids/{negotiationid}`
+### `/api/Products/{productId}/bids/{negotiationId}`
 
-- GET: Used to display the negotiation with the `negotiationid` for the Product with `productid`. No Data is needed for this action.
+- GET: Used to display the negotiation with the `negotiationId` for the Product with `productId`. No Data is needed for this action.
 
 - POST: Used to reject/accept negotiations. Requires the authorization cookie from `/api/Session/login`. Example Data for changing negotiation status in json.
 
 ```json
 {
-  "id": 1,
-  "userId": "",
+  "Id": 1,
   "productId": 1,
   "price": 1,
-  "status": 1,
-  "timesRejected": 1,
-  "rejectedAt": null
+  "status": 2
 }
 ```
 
-`rejectedAt`, `timesRejected`, `price` are not used. Id's in the json need to be the same as id's in the endpoint. `status` accepted values: `1` - accepting, `2` - rejecting
+`rejectedAt`, `timesRejected`, `price` are not used. id's in the json need to be the same as id's in the endpoint. `status` accepted values: `1` - accepting, `2` - rejecting.
 
-- DEL: Used to delete negotiation with the `negotiationid` for the Product with `productid`. Requires the authorization cookie from `/api/Session/login`. No Data is needed for this action.
+- DELETE: Used to delete negotiation with the `negotiationId` for the Product with `productId`. Requires the authorization cookie from `/api/Session/login`. No Data is needed for this action.

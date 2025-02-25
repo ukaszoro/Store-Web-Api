@@ -18,7 +18,8 @@ public class NegotiationsController(
     ISessionManager sessionManager,
     IUserSessionManager userSessionManager) : ControllerBase
 {
-    private NegotiationValidator _negotiationValidator = new NegotiationValidator(negotiationManager, productsManager);
+    private readonly NegotiationValidator _negotiationValidator =
+        new NegotiationValidator(negotiationManager, productsManager);
 
     [HttpGet("{productId}/bids")]
     public async Task<ActionResult<IEnumerable<Negotiation>>> GetNegotiations(long productId)
@@ -31,15 +32,15 @@ public class NegotiationsController(
         return await negotiationManager.GetAllWithProductId(productId);
     }
 
-    [HttpGet("{productid}/bids/{negotiationid}")]
-    public async Task<ActionResult<NegotiationDto>> GetNegotiation(long productId, long negotiationid)
+    [HttpGet("{productId}/bids/{negotiationId}")]
+    public async Task<ActionResult<NegotiationDto>> GetNegotiation(long productId, long negotiationId)
     {
-        if (!_negotiationValidator.Exists(negotiationid))
+        if (!_negotiationValidator.Exists(negotiationId))
         {
             return NotFound();
         }
 
-        return ItemToDto((await negotiationManager.Find(productId))!);
+        return ItemToDto((await negotiationManager.Find(negotiationId))!);
     }
 
     [HttpPost("{productId}/bids")]
@@ -58,16 +59,26 @@ public class NegotiationsController(
             return BadRequest();
         }
 
+        if (cookie is null)
+        {
+            return Unauthorized();
+        }
+
         Negotiation? negotiation;
 
         if (_negotiationValidator.Exists(cookie, negotiationDto.ProductId))
         {
             negotiation = await negotiationManager.Find(cookie, negotiationDto.ProductId);
-            if (negotiation.status == NegotiationStatus.rejected)
+            if (negotiation is null)
             {
-                negotiation.status = NegotiationStatus.waiting;
+                return NotFound();
+            }
+
+            if (negotiation.Status == NegotiationStatus.rejected)
+            {
+                negotiation.Status = NegotiationStatus.waiting;
                 negotiation.RejectedAt = null;
-                negotiation.price = negotiationDto.price;
+                negotiation.Price = negotiationDto.Price;
             }
             else
             {
@@ -81,10 +92,10 @@ public class NegotiationsController(
             negotiation = new Negotiation
             {
                 ProductId = negotiationDto.ProductId,
-                price = negotiationDto.price,
+                Price = negotiationDto.Price,
                 UserId = cookie,
                 TimesRejected = 0,
-                status = NegotiationStatus.waiting
+                Status = NegotiationStatus.waiting
             };
             await negotiationManager.Add(negotiation);
         }
@@ -92,20 +103,20 @@ public class NegotiationsController(
         return Ok();
     }
 
-    [HttpDelete("{productid}/bids/{negotiationid}")]
-    public async Task<IActionResult> DeleteNegotiation(long productid, long negotiationid)
+    [HttpDelete("{productId}/bids/{negotiationId}")]
+    public async Task<IActionResult> DeleteNegotiation(long productId, long negotiationId)
     {
         if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        Negotiation? negotiation = await negotiationManager.Find(negotiationid);
+        Negotiation? negotiation = await negotiationManager.Find(negotiationId);
         if (negotiation is null)
         {
             return NotFound();
         }
-        else if (productid != negotiation.ProductId)
+        else if (productId != negotiation.ProductId)
         {
             return BadRequest();
         }
@@ -116,45 +127,45 @@ public class NegotiationsController(
         return NoContent();
     }
 
-    [HttpPost("{productid}/bids/{negotiationid}")]
-    public async Task<ActionResult<IEnumerable<Product>>> CreateBid(long productid, long negotiationid,
-        Negotiation? negotiationNew)
+    [HttpPost("{productId}/bids/{negotiationId}")]
+    public async Task<ActionResult<IEnumerable<Product>>> CreateBid(long productId, long negotiationId,
+        NegotiationDto negotiationNew)
     {
         if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        if (negotiationNew is null)
-        {
-            return NotFound();
-        }
-        else if (productid != negotiationNew.ProductId || negotiationNew.Id != negotiationid)
+        else if (productId != negotiationNew.ProductId || negotiationNew.Id != negotiationId)
         {
             return BadRequest();
         }
 
-        Negotiation? negotiation = await negotiationManager.Find(negotiationid);
+        Negotiation? negotiation = await negotiationManager.Find(negotiationId);
         if (negotiation is null)
         {
             return NotFound();
         }
 
-        if (negotiationNew.status == NegotiationStatus.rejected)
+        if (negotiationNew.Status == NegotiationStatus.rejected)
         {
-            negotiation.status = NegotiationStatus.rejected;
+            negotiation.Status = NegotiationStatus.rejected;
             negotiation.TimesRejected += 1;
             negotiation.RejectedAt = DateTime.Now;
             await negotiationManager.SaveChanges();
         }
-        else if (negotiationNew.status == NegotiationStatus.accepted)
+        else if (negotiationNew.Status == NegotiationStatus.accepted)
         {
-            negotiation.status = NegotiationStatus.accepted;
+            negotiation.Status = NegotiationStatus.accepted;
+        }
+        else
+        {
+            return BadRequest();
         }
 
         if (negotiation.TimesRejected > 3)
         {
-            negotiation.status = NegotiationStatus.closed;
+            negotiation.Status = NegotiationStatus.closed;
         }
 
         return Ok();
@@ -164,7 +175,7 @@ public class NegotiationsController(
         new NegotiationDto()
         {
             ProductId = negotiation.ProductId,
-            price = negotiation.price,
-            status = negotiation.status,
+            Price = negotiation.Price,
+            Status = negotiation.Status,
         };
 }
