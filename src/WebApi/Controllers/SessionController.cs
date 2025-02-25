@@ -5,12 +5,12 @@ namespace WebApi.Controllers;
 
 [Route("api/Session")]
 [ApiController]
-public class SessionController(ISessionManager sessionManager) : ControllerBase
+public class SessionController(IEmployeeSessionManager employeeSessionManager) : ControllerBase
 {
     [HttpPost("login")]
     public ActionResult Login()
     {
-        Response.Cookies.Append("session", sessionManager.NewSession(),
+        Response.Cookies.Append("session", employeeSessionManager.NewSession(),
             new CookieOptions { Expires = DateTimeOffset.UtcNow.AddDays(30) });
         return Ok();
     }
@@ -18,7 +18,7 @@ public class SessionController(ISessionManager sessionManager) : ControllerBase
     [HttpPost("check")]
     public ActionResult Check()
     {
-        if (sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Ok("Logged in");
         }

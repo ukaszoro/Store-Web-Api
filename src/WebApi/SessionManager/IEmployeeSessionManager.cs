@@ -1,6 +1,6 @@
 namespace WebApi.SessionManager;
 
-public interface ISessionManager
+public interface IEmployeeSessionManager
 {
     string NewSession();
     bool Exists(string sessionId);

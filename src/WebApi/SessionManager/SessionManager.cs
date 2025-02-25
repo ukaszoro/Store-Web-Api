@@ -1,6 +1,6 @@
 namespace WebApi.SessionManager;
 
-public class SessionManager : ISessionManager, IUserSessionManager
+public class SessionManager : IEmployeeSessionManager, IUserSessionManager
 {
     private readonly HashSet<string> _sessions = new();
 

@@ -1,18 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using Negotiations.NegotiationManager;
 
-namespace WebApi.BackgroundServices;
+namespace Negotiations.BackgroundServices;
 
 public static class ClearNegotiations
 {
-    private static readonly DateTime Cutoff = DateTime.UtcNow.AddDays(-7);
-
-    public static async Task Clear(INegotiationManager negotiationManager)
+    public static async Task Clear(INegotiationManager negotiationManager, TimeProvider timeProvider)
     {
+        var cutoff = timeProvider.GetUtcNow().AddDays(-7).DateTime;
+        
         var negotiationsToBeRemoved = negotiationManager.GetAll()
-            .Where(x => x.RejectedAt != null && DateTime.Compare((DateTime)x.RejectedAt, Cutoff) < 0)
+            .Where(x => (x.RejectedAt != null && DateTime.Compare(x.RejectedAt.Value, cutoff) < 0))
             .AsAsyncEnumerable();
-
+        
         await foreach (var negotiation in negotiationsToBeRemoved)
         {
             await negotiationManager.Remove(negotiation);

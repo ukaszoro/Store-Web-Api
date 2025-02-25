@@ -7,7 +7,7 @@ namespace WebApi.Validator;
 
 public class ProductValidator(IProductsManager productsManager)
 {
-    public bool Validate(Product product)
+    public bool Validate(ProductDTO product)
     {
         if (product.Name != string.Empty && product.Price > 0)
         {

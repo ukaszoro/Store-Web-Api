@@ -15,7 +15,7 @@ namespace WebApi.Controllers;
 public class NegotiationsController(
     INegotiationManager negotiationManager,
     IProductsManager productsManager,
-    ISessionManager sessionManager,
+    IEmployeeSessionManager employeeSessionManager,
     IUserSessionManager userSessionManager) : ControllerBase
 {
     private readonly NegotiationValidator _negotiationValidator =
@@ -24,7 +24,7 @@ public class NegotiationsController(
     [HttpGet("{productId}/bids")]
     public async Task<ActionResult<IEnumerable<Negotiation>>> GetNegotiations(long productId)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
@@ -40,11 +40,23 @@ public class NegotiationsController(
             return NotFound();
         }
 
-        return ItemToDto((await negotiationManager.Find(negotiationId))!);
+        var negotiation = (await negotiationManager.Find(negotiationId));
+        if (negotiation is null)
+        {
+            return NotFound();
+        }
+
+        return new NegotiationDto()
+        {
+            Id = negotiation.Id,
+            ProductId = negotiation.ProductId,
+            Price = negotiation.Price,
+            Status = negotiation.Status,
+        };
     }
 
     [HttpPost("{productId}/bids")]
-    public async Task<ActionResult<IEnumerable<Product>>> CreateBid(long productId, NegotiationDto negotiationDto)
+    public async Task<ActionResult> CreateBid(long productId, NegotiationDto negotiationDto)
     {
         var cookie = Request.Cookies["client"];
         if (!userSessionManager.Exists(cookie ?? String.Empty))
@@ -106,7 +118,7 @@ public class NegotiationsController(
     [HttpDelete("{productId}/bids/{negotiationId}")]
     public async Task<IActionResult> DeleteNegotiation(long productId, long negotiationId)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
@@ -128,10 +140,10 @@ public class NegotiationsController(
     }
 
     [HttpPost("{productId}/bids/{negotiationId}")]
-    public async Task<ActionResult<IEnumerable<Product>>> CreateBid(long productId, long negotiationId,
+    public async Task<ActionResult> CreateBid(long productId, long negotiationId,
         NegotiationDto negotiationNew)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
@@ -151,7 +163,7 @@ public class NegotiationsController(
         {
             negotiation.Status = NegotiationStatus.rejected;
             negotiation.TimesRejected += 1;
-            negotiation.RejectedAt = DateTime.Now;
+            negotiation.RejectedAt = DateTime.UtcNow;
             await negotiationManager.SaveChanges();
         }
         else if (negotiationNew.Status == NegotiationStatus.accepted)
@@ -170,12 +182,4 @@ public class NegotiationsController(
 
         return Ok();
     }
-
-    private static NegotiationDto ItemToDto(Negotiation negotiation) =>
-        new NegotiationDto()
-        {
-            ProductId = negotiation.ProductId,
-            Price = negotiation.Price,
-            Status = negotiation.Status,
-        };
 }

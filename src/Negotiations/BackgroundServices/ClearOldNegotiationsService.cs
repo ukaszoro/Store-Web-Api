@@ -1,9 +1,11 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Negotiations.NegotiationManager;
 
-namespace WebApi.BackgroundServices;
+namespace Negotiations.BackgroundServices;
 
 public class ClearOldNegotiationsService(
-    IServiceProvider serviceProvider) : BackgroundService
+    IServiceProvider serviceProvider, TimeProvider timeProvider) : BackgroundService
 {
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(60));
 
@@ -17,7 +19,7 @@ public class ClearOldNegotiationsService(
         while (!stoppingToken.IsCancellationRequested &&
                await _timer.WaitForNextTickAsync(stoppingToken))
         {
-            await ClearNegotiations.Clear(negotiationManager);
+            await ClearNegotiations.Clear(negotiationManager, timeProvider);
         }
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Products.Models;
 using Products.ProductManager;
+using WebApi.DTO;
 using WebApi.Validator;
 using WebApi.SessionManager;
 
@@ -9,19 +10,26 @@ namespace WebApi.Controllers;
 
 [Route("api/Products")]
 [ApiController]
-public class ProductsController(IProductsManager productsManager, ISessionManager sessionManager) : ControllerBase
+public class ProductsController(IProductsManager productsManager, IEmployeeSessionManager employeeSessionManager) : ControllerBase
 {
-    private ProductValidator _productValidator = new ProductValidator(productsManager);
+    private readonly ProductValidator _productValidator = new ProductValidator(productsManager);
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+    public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts()
     {
-        return await productsManager.GetAll()
+        return await productsManager
+            .GetAll()
+            .Select(x => new ProductDTO
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Price = x.Price,
+            })
             .ToListAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetProduct(long id)
+    public async Task<ActionResult<ProductDTO>> GetProduct(long id)
     {
         var product = await productsManager.GetById(id);
 
@@ -30,18 +38,23 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
             return NotFound();
         }
 
-        return product;
+        return new ProductDTO
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price,
+        };
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutProduct(long id, Product productNew)
+    public async Task<IActionResult> PutProduct(long id, ProductDTO productDto)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        if (id != productNew.Id)
+        if (id != productDto.Id)
         {
             return BadRequest();
         }
@@ -52,13 +65,13 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
             return NotFound();
         }
 
-        if (!_productValidator.Validate(productNew))
+        if (!_productValidator.Validate(productDto))
         {
             return BadRequest();
         }
 
-        product.Name = productNew.Name;
-        product.Price = productNew.Price;
+        product.Name = productDto.Name;
+        product.Price = productDto.Price;
 
         try
         {
@@ -73,27 +86,27 @@ public class ProductsController(IProductsManager productsManager, ISessionManage
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> PostProduct(Product product)
+    public async Task<ActionResult> PostProduct(ProductDTO productDto)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
 
-        if (!_productValidator.Validate(product))
+        if (!_productValidator.Validate(productDto))
         {
             return BadRequest();
         }
 
-        await productsManager.Add(product);
+        await productsManager.Add(new Product { Name = productDto.Name, Price = productDto.Price });
 
-        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        return CreatedAtAction(nameof(GetProduct), new { id = productDto.Id }, productDto);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(long id)
     {
-        if (!sessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
+        if (!employeeSessionManager.Exists(Request.Cookies["session"] ?? String.Empty))
         {
             return Unauthorized();
         }
